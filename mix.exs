@@ -1,14 +1,14 @@
-defmodule Ueberauth.Github.Mixfile do
+defmodule Ueberauth.Feide.Mixfile do
   use Mix.Project
 
-  @source_url "https://github.com/ueberauth/ueberauth_github"
+  @source_url "https://github.com/cymra/ueberauth_feide"
   @version "0.8.3"
 
   def project do
     [
-      app: :ueberauth_github,
+      app: :ueberauth_feide,
       version: @version,
-      name: "Üeberauth GitHub",
+      name: "Üeberauth Feide",
       elixir: "~> 1.3",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -29,7 +29,8 @@ defmodule Ueberauth.Github.Mixfile do
       {:oauth2, "~> 1.0 or ~> 2.0"},
       {:ueberauth, "~> 0.7"},
       {:credo, "~> 0.8", only: [:dev, :test], runtime: false},
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
+      {:ssl_verify_fun, "~> 1.1.7", manager: :rebar3, override: true}
     ]
   end
 
@@ -50,7 +51,7 @@ defmodule Ueberauth.Github.Mixfile do
 
   defp package do
     [
-      description: "An Ueberauth strategy for using Github to authenticate your users.",
+      description: "An Ueberauth strategy for using Feide to authenticate your users.",
       files: ["lib", "mix.exs", "README.md", "LICENSE"],
       maintainers: ["Daniel Neighman", "Sean Callan"],
       licenses: ["MIT"],

@@ -1,4 +1,4 @@
-defmodule Ueberauth.Strategy.Github do
+defmodule Ueberauth.Strategy.Feide do
   @moduledoc """
   Provides an Ueberauth strategy for authenticating with GitHub.
 
@@ -72,10 +72,10 @@ defmodule Ueberauth.Strategy.Github do
   (includes public user profile info, public repository info, and gists)"
   """
   use Ueberauth.Strategy,
-    uid_field: :id,
+    uid_field: :uid,
     default_scope: "",
     send_redirect_uri: true,
-    oauth2_module: Ueberauth.Strategy.Github.OAuth
+    oauth2_module: Ueberauth.Strategy.Feide.OAuth
 
   alias Ueberauth.Auth.Info
   alias Ueberauth.Auth.Credentials
@@ -110,7 +110,13 @@ defmodule Ueberauth.Strategy.Github do
   """
   def handle_callback!(%Plug.Conn{params: %{"code" => code}} = conn) do
     module = option(conn, :oauth2_module)
-    token = apply(module, :get_token!, [[code: code]])
+
+    token =
+      apply(module, :get_token!, [
+        [
+          code: code
+        ]
+      ])
 
     if token.access_token == nil do
       set_errors!(conn, [
@@ -132,8 +138,8 @@ defmodule Ueberauth.Strategy.Github do
   """
   def handle_cleanup!(conn) do
     conn
-    |> put_private(:github_user, nil)
-    |> put_private(:github_token, nil)
+    |> put_private(:feide_user, nil)
+    |> put_private(:feide_token, nil)
   end
 
   @doc """
@@ -149,7 +155,7 @@ defmodule Ueberauth.Strategy.Github do
   Includes the credentials from the GitHub response.
   """
   def credentials(conn) do
-    token = conn.private.github_token
+    token = conn.private.feide_token
     scope_string = token.other_params["scope"] || ""
     scopes = String.split(scope_string, ",")
 
@@ -168,31 +174,13 @@ defmodule Ueberauth.Strategy.Github do
   struct.
   """
   def info(conn) do
-    user = conn.private.github_user
+    user = conn.private.feide_user
     allow_private_emails = Keyword.get(options(conn), :allow_private_emails, false)
 
     %Info{
-      name: user["name"],
-      description: user["bio"],
-      nickname: user["login"],
-      email: maybe_fetch_email(user, allow_private_emails),
-      location: user["location"],
-      image: user["avatar_url"],
-      urls: %{
-        followers_url: user["followers_url"],
-        avatar_url: user["avatar_url"],
-        events_url: user["events_url"],
-        starred_url: user["starred_url"],
-        blog: user["blog"],
-        subscriptions_url: user["subscriptions_url"],
-        organizations_url: user["organizations_url"],
-        gists_url: user["gists_url"],
-        following_url: user["following_url"],
-        api_url: user["url"],
-        html_url: user["html_url"],
-        received_events_url: user["received_events_url"],
-        repos_url: user["repos_url"]
-      }
+      name: user["displayName"],
+      nickname: user["givenName"],
+      email: user["eduPersonPrincipalName"]
     }
   end
 
@@ -203,8 +191,8 @@ defmodule Ueberauth.Strategy.Github do
   def extra(conn) do
     %Extra{
       raw_info: %{
-        token: conn.private.github_token,
-        user: conn.private.github_user
+        token: conn.private.feide_token,
+        user: conn.private.feide_user
       }
     }
   end
@@ -216,7 +204,7 @@ defmodule Ueberauth.Strategy.Github do
   end
 
   defp fetch_uid(field, conn) do
-    conn.private.github_user[field]
+    conn.private.feide_user[field]
   end
 
   defp fetch_email!(user, allow_private_emails) do
@@ -243,24 +231,17 @@ defmodule Ueberauth.Strategy.Github do
   end
 
   defp fetch_user(conn, token) do
-    conn = put_private(conn, :github_token, token)
+    conn = put_private(conn, :feide_token, token)
     # Will be better with Elixir 1.3 with/else
-    case Ueberauth.Strategy.Github.OAuth.get(token, "/user") do
+    case Ueberauth.Strategy.Feide.OAuth.get(
+           token,
+           "https://api.dataporten.no/userinfo/v1/userinfo"
+         ) do
       {:ok, %OAuth2.Response{status_code: 401, body: _body}} ->
         set_errors!(conn, [error("token", "unauthorized")])
 
-      {:ok, %OAuth2.Response{status_code: status_code, body: user}}
-      when status_code in 200..399 ->
-        case Ueberauth.Strategy.Github.OAuth.get(token, "/user/emails") do
-          {:ok, %OAuth2.Response{status_code: status_code, body: emails}}
-          when status_code in 200..399 ->
-            user = Map.put(user, "emails", emails)
-            put_private(conn, :github_user, user)
-
-          # Continue on as before
-          {:error, _} ->
-            put_private(conn, :github_user, user)
-        end
+      {:ok, %OAuth2.Response{status_code: status_code, body: user}} ->
+        put_private(conn, :feide_user, user)
 
       {:error, %OAuth2.Error{reason: reason}} ->
         set_errors!(conn, [error("OAuth2", reason)])

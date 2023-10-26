@@ -1,4 +1,4 @@
-defmodule Ueberauth.Strategy.Github.OAuth do
+defmodule Ueberauth.Strategy.Feide.OAuth do
   @moduledoc """
   An implementation of OAuth2 for GitHub.
 
@@ -14,10 +14,10 @@ defmodule Ueberauth.Strategy.Github.OAuth do
 
   @defaults [
     strategy: __MODULE__,
-    site: "https://api.github.com",
-    authorize_url: "https://github.com/login/oauth/authorize",
-    token_url: "https://github.com/login/oauth/access_token",
-    headers: [{"user-agent", "ueberauth-github"}]
+    site: "https://auth.dataporten.no",
+    authorize_url: "https://auth.dataporten.no/oauth/authorization",
+    token_url: "https://auth.dataporten.no/oauth/token",
+    headers: [{"user-agent", "ueberauth-feide"}]
   ]
 
   @doc """
@@ -37,9 +37,10 @@ defmodule Ueberauth.Strategy.Github.OAuth do
   def client(opts \\ []) do
     config =
       :ueberauth
-      |> Application.fetch_env!(Ueberauth.Strategy.Github.OAuth)
+      |> Application.fetch_env!(Ueberauth.Strategy.Feide.OAuth)
       |> check_credential(:client_id)
       |> check_credential(:client_secret)
+      |> check_config_key_exists(:redirect_uri)
 
     client_opts =
       @defaults
@@ -102,7 +103,7 @@ defmodule Ueberauth.Strategy.Github.OAuth do
       {:system, env_key} ->
         case System.get_env(env_key) do
           nil ->
-            raise "#{inspect(env_key)} missing from environment, expected in config :ueberauth, Ueberauth.Strategy.Github"
+            raise "#{inspect(env_key)} missing from environment, expected in config :ueberauth, Ueberauth.Strategy.Feide"
 
           value ->
             Keyword.put(config, key, value)
@@ -112,13 +113,13 @@ defmodule Ueberauth.Strategy.Github.OAuth do
 
   defp check_config_key_exists(config, key) when is_list(config) do
     unless Keyword.has_key?(config, key) do
-      raise "#{inspect(key)} missing from config :ueberauth, Ueberauth.Strategy.Github"
+      raise "#{inspect(key)} missing from config :ueberauth, Ueberauth.Strategy.Feide"
     end
 
     config
   end
 
   defp check_config_key_exists(_, _) do
-    raise "Config :ueberauth, Ueberauth.Strategy.Github is not a keyword list, as expected"
+    raise "Config :ueberauth, Ueberauth.Strategy.Feideis not a keyword list, as expected"
   end
 end
