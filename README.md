@@ -1,4 +1,4 @@
-# Überauth GitHub
+# Überauth Feide
 
 [![Build Status](https://travis-ci.org/ueberauth/ueberauth_github.svg?branch=master)](https://travis-ci.org/ueberauth/ueberauth_github)
 [![Module Version](https://img.shields.io/hexpm/v/ueberauth_github.svg)](https://hex.pm/packages/ueberauth_github)
@@ -11,14 +11,14 @@
 
 ## Installation
 
-1.  Setup your application at [GitHub Developer](https://developer.github.com).
+1.  Setup your application at https://kunde.feide.no.
 
-2.  Add `:ueberauth_github` to your list of dependencies in `mix.exs`:
+2.  Add `:ueberauth_feide` to your list of dependencies in `mix.exs`:
 
     ```elixir
     def deps do
       [
-        {:ueberauth_github, "~> 0.8"}
+        {:ueberauth_feide, "~> 0.8"}
       ]
     end
     ```
@@ -28,7 +28,7 @@
     ```elixir
     config :ueberauth, Ueberauth,
       providers: [
-        github: {Ueberauth.Strategy.Github, []}
+        github: {Ueberauth.Strategy.Feide, []}
       ]
     ```
 
@@ -36,16 +36,19 @@
 
     ```elixir
     config :ueberauth, Ueberauth.Strategy.Github.OAuth,
-      client_id: System.get_env("GITHUB_CLIENT_ID"),
-      client_secret: System.get_env("GITHUB_CLIENT_SECRET")
+      client_id: System.get_env("FEIDE_CLIENT_ID"),
+      client_secret: System.get_env("FEIDE_CLIENT_SECRET")
+      redirect_uri: System.get_env("FEIDE_REDIRECT_URI")
     ```
 
     Or, to read the client credentials at runtime:
 
     ```elixir
     config :ueberauth, Ueberauth.Strategy.Github.OAuth,
-      client_id: {:system, "GITHUB_CLIENT_ID"},
-      client_secret: {:system, "GITHUB_CLIENT_SECRET"}
+      client_id: {:system, "FEIDE_CLIENT_ID"},
+      client_secret: {:system, "FEIDE_CLIENT_SECRET"}
+      redirect_uri: {:system, "FEIDE_REDIRECT_URI"}
+    ```
     ```
 
 5.  Include the Überauth plug in your router:
@@ -81,18 +84,11 @@ For an example implementation see the [Überauth Example](https://github.com/ueb
 
 Depending on the configured url you can initiate the request through:
 
-    /auth/github
+    /auth/feide
 
 Or with options:
 
-    /auth/github?scope=user,public_repo
-
-By default the requested scope is `"user,public\_repo"`. This provides both read
-and write access to the GitHub user profile details and public repos. For a
-read-only scope, either use `"user:email"` or an empty scope `""`. Empty scope
-will only request minimum public information which even excludes user's email address
-which results in a `nil` for `email` inside returned `%Ueberauth.Auth.Info{}`.
-See more at [GitHub's OAuth Documentation](https://developer.github.com/apps/building-integrations/setting-up-and-registering-oauth-apps/about-scopes-for-oauth-apps/).
+    /auth/feide?scope=userid,email
 
 Scope can be configured either explicitly as a `scope` query value on the
 request path or in your configuration:
@@ -100,40 +96,26 @@ request path or in your configuration:
 ```elixir
 config :ueberauth, Ueberauth,
   providers: [
-    github: {Ueberauth.Strategy.Github, [default_scope: "user,public_repo,notifications"]}
+    github: {Ueberauth.Strategy.Feide, [default_scope: "userid,email,openid"]}
   ]
 ```
 
-It is also possible to disable the sending of the `redirect_uri` to GitHub.
-This is particularly useful when your production application sits behind a
-proxy that handles SSL connections. In this case, the `redirect_uri` sent by
-`Ueberauth` will start with `http` instead of `https`, and if you configured
-your GitHub OAuth application's callback URL to use HTTPS, GitHub will throw an
-`uri_mismatch` error.
+<!-- It is also possible to disable the sending of the `redirect_uri` to GitHub. -->
+<!-- This is particularly useful when your production application sits behind a -->
+<!-- proxy that handles SSL connections. In this case, the `redirect_uri` sent by -->
+<!-- `Ueberauth` will start with `http` instead of `https`, and if you configured -->
+<!-- your GitHub OAuth application's callback URL to use HTTPS, GitHub will throw an -->
+<!-- `uri_mismatch` error. -->
 
-To prevent `Ueberauth` from sending the `redirect_uri`, you should add the
-following to your configuration:
+<!-- To prevent `Ueberauth` from sending the `redirect_uri`, you should add the -->
+<!-- following to your configuration: -->
 
-```elixir
-config :ueberauth, Ueberauth,
-  providers: [
-    github: {Ueberauth.Strategy.Github, [send_redirect_uri: false]}
-  ]
-```
-
-## Private Emails
-
-GitHub now allows you to keep your email address private. If you don't mind
-that you won't know a users email address you can specify
-`allow_private_emails`. This will set the users email as
-`id+username@users.noreply.github.com`.
-
-```elixir
-config :ueberauth, Ueberauth,
-  providers: [
-    github: {Ueberauth.Strategy.Github, [allow_private_emails: true]}
-  ]
-```
+<!-- ```elixir -->
+<!-- config :ueberauth, Ueberauth, -->
+<!--   providers: [ -->
+<!--     github: {Ueberauth.Strategy.Github, [send_redirect_uri: false]} -->
+<!--   ] -->
+<!-- ``` -->
 
 ## Copyright and License
 
