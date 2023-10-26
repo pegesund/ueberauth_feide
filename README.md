@@ -1,13 +1,6 @@
 # Überauth Feide
 
-[![Build Status](https://travis-ci.org/ueberauth/ueberauth_github.svg?branch=master)](https://travis-ci.org/ueberauth/ueberauth_github)
-[![Module Version](https://img.shields.io/hexpm/v/ueberauth_github.svg)](https://hex.pm/packages/ueberauth_github)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/ueberauth_github/)
-[![Total Download](https://img.shields.io/hexpm/dt/ueberauth_github.svg)](https://hex.pm/packages/ueberauth_github)
-[![License](https://img.shields.io/hexpm/l/ueberauth_github.svg)](https://github.com/ueberauth/ueberauth_github/blob/master/LICENSE.md)
-[![Last Updated](https://img.shields.io/github/last-commit/ueberauth/ueberauth_github.svg)](https://github.com/ueberauth/ueberauth_github/commits/master)
-
-> GitHub OAuth2 strategy for Überauth.
+> Feide OAuth2 strategy for Überauth.
 
 ## Installation
 
@@ -23,19 +16,19 @@
     end
     ```
 
-3.  Add GitHub to your Überauth configuration:
+3.  Add Feide to your Überauth configuration:
 
     ```elixir
     config :ueberauth, Ueberauth,
       providers: [
-        github: {Ueberauth.Strategy.Feide, []}
+        feide: {Ueberauth.Strategy.Feide, []}
       ]
     ```
 
 4.  Update your provider configuration:
 
     ```elixir
-    config :ueberauth, Ueberauth.Strategy.Github.OAuth,
+    config :ueberauth, Ueberauth.Strategy.Feide.OAuth,
       client_id: System.get_env("FEIDE_CLIENT_ID"),
       client_secret: System.get_env("FEIDE_CLIENT_SECRET")
       redirect_uri: System.get_env("FEIDE_REDIRECT_URI")
@@ -44,7 +37,7 @@
     Or, to read the client credentials at runtime:
 
     ```elixir
-    config :ueberauth, Ueberauth.Strategy.Github.OAuth,
+    config :ueberauth, Ueberauth.Strategy.Feide.OAuth,
       client_id: {:system, "FEIDE_CLIENT_ID"},
       client_secret: {:system, "FEIDE_CLIENT_SECRET"}
       redirect_uri: {:system, "FEIDE_REDIRECT_URI"}
@@ -96,7 +89,7 @@ request path or in your configuration:
 ```elixir
 config :ueberauth, Ueberauth,
   providers: [
-    github: {Ueberauth.Strategy.Feide, [default_scope: "userid,email,openid"]}
+    feide: {Ueberauth.Strategy.Feide, [default_scope: "userid,email,openid"]}
   ]
 ```
 
