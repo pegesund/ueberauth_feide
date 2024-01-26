@@ -175,7 +175,6 @@ defmodule Ueberauth.Strategy.Feide do
   """
   def info(conn) do
     user = conn.private.feide_user
-    allow_private_emails = Keyword.get(options(conn), :allow_private_emails, false)
 
     %Info{
       name: user["displayName"],
@@ -197,37 +196,8 @@ defmodule Ueberauth.Strategy.Feide do
     }
   end
 
-  defp fetch_uid("email", conn) do
-    # private email will not be available as :email and must be fetched
-    allow_private_emails = Keyword.get(options(conn), :allow_private_emails, false)
-    fetch_email!(conn.private.github_user.user, allow_private_emails)
-  end
-
   defp fetch_uid(field, conn) do
     conn.private.feide_user[field]
-  end
-
-  defp fetch_email!(user, allow_private_emails) do
-    maybe_fetch_email(user, allow_private_emails) ||
-      raise "Unable to access the user's email address"
-  end
-
-  defp maybe_fetch_email(user, allow_private_emails) do
-    user["email"] ||
-      maybe_get_primary_email(user) ||
-      maybe_get_private_email(user, allow_private_emails)
-  end
-
-  defp maybe_get_primary_email(user) do
-    if user["emails"] && Enum.count(user["emails"]) > 0 do
-      Enum.find(user["emails"], & &1["primary"])["email"]
-    end
-  end
-
-  defp maybe_get_private_email(user, allow_private_emails) do
-    if allow_private_emails do
-      "#{user["id"]}+#{user["login"]}@users.noreply.github.com"
-    end
   end
 
   defp fetch_user(conn, token) do
@@ -240,7 +210,7 @@ defmodule Ueberauth.Strategy.Feide do
       {:ok, %OAuth2.Response{status_code: 401, body: _body}} ->
         set_errors!(conn, [error("token", "unauthorized")])
 
-      {:ok, %OAuth2.Response{status_code: status_code, body: user}} ->
+      {:ok, %OAuth2.Response{status_code: _status_code, body: user}} ->
         put_private(conn, :feide_user, user)
 
       {:error, %OAuth2.Error{reason: reason}} ->
