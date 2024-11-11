@@ -96,6 +96,9 @@ defmodule Ueberauth.Strategy.Feide do
       |> with_scopes(conn)
       |> with_state_param(conn)
       |> with_redirect_uri(conn)
+      |> Keyword.update!(:redirect_uri, fn uri ->
+        String.replace_prefix(uri, "http://", "https://")
+      end)
 
     module = option(conn, :oauth2_module)
     redirect!(conn, apply(module, :authorize_url!, [opts]))
